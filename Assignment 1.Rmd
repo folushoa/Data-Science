@@ -1,0 +1,86 @@
+---
+title: "Assignment 1"
+author: "Folorunsho Atanda"
+date: "2023-09-04"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Objective: The objective of this assignment is to take data set and make a subset
+of it. For my task I took the data set that shows the approval rating of
+Trump and Biden based on how they handle the covid pandemic
+
+```{r import libraries}
+## import data.table library
+library(data.table)
+## import ggplot library
+library(ggplot2)
+```
+
+```{r data}
+## import covid approval poll csv 
+url <- "https://raw.githubusercontent.com/folushoa/Data-Science/Data-607/covid_approval_polls.csv"
+covid_approval_poll <- fread(input = url, sep = ",", header = TRUE)
+```
+
+```{r subset}
+## subset of covid approval status focusing on Trump
+trump_approval_poll <- subset(covid_approval_poll, 
+                              subject == "Trump" & party == "all", 
+                              select = c(start_date, end_date, approve, 
+                                         disapprove, sample_size))
+
+## subset of covid approval status focusing on Biden
+biden_approval_poll <- subset(covid_approval_poll, 
+                              subject == "Biden" & party == "all", 
+                              select = c(start_date, end_date, approve, 
+                                         disapprove, sample_size))
+```
+
+```{r Trump plot}
+## plot of Trump approval and disapproval
+trump_poll_plot <- ggplot(data = trump_approval_poll, aes(x = end_date, 
+                   y = approve)) + geom_line(color = 'blue') + labs(x = "Month",
+                   y = "Ratio", title = "Trump Approval Rating")
+trump_poll_plot <- trump_poll_plot + geom_line(aes(x = end_date, 
+                   y = disapprove), color = 'red')
+trump_poll_plot <- trump_poll_plot + 
+  scale_color_manual(name = "Approval Status", breaks = c('Approve', 'Disapprove'),
+  values = c('Approve' =  'blue', 'Disapprove' = 'red'))
+trump_poll_plot
+```
+
+Observation: Examining the preceding graph illustrating Trump's approval ratings 
+(indicated by the color blue) and disapproval ratings 
+(indicated by the color red), it becomes evident that at the onset of the 
+pandemic, Trump enjoyed a favorable approval rating. However, this dynamic 
+shifted in April, as we observe a notable rise in his disapproval ratings.
+
+When President Biden assumed office in January 2021, Trump's disapproval rating 
+surpassed his approval rating.
+
+```{r Biden Plot}
+## plot of Biden approval and disapproval
+biden_poll_plot <- ggplot(data = biden_approval_poll, aes(x = end_date, 
+                   y = approve)) + geom_line(color = 'blue') + labs(x = "Month",
+                   y = "Ratio", title = "Biden Approval Rating")
+biden_poll_plot <- biden_poll_plot + geom_line(aes(x = end_date, 
+                   y = disapprove), color = 'red')
+biden_poll_plot <- biden_poll_plot + 
+  scale_color_manual(name = "Approval Status", breaks = c('Approve', 'Disapprove'),
+                     values = c('Approve' =  'blue', 'Disapprove' = 'red'))
+biden_poll_plot
+```
+
+Observation: Analyzing the aforementioned chart depicting Biden's approval 
+ratings (represented in blue) and disapproval ratings (represented in red), it 
+becomes evident that at the commencement of the pandemic, the majority of 
+individuals endorsed Biden's pandemic management. Nevertheless, as of October 
+2022, the balance between approval and disapproval became roughly equal. This 
+equilibrium persisted until the conclusion of the polling period in 
+September 2022.
