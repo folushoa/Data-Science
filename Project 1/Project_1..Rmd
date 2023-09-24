@@ -1,0 +1,147 @@
+---
+title: "Project 1"
+author: "Folorunsho Atanda"
+date: "2023-09-23"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Objective:** Extract information from a text file to create a csv. Text file 
+contains a chess tournament information. csv file is going to have 
+**Players Name**, **Player's State**, **Total Number of Points**, 
+**Player's Pre-Rating**, and **Opponent's Average Pre-Rating**
+
+```{r load library}
+library(tidyverse)
+library(data.table)
+```
+
+```{r load txt file from github into table in R}
+url <- "https://raw.githubusercontent.com/folushoa/Data-Science/Data-607/Project%201/tournamentinfo.txt"
+columnNames <- c("Pair Num", "Player Name", "Total Pts", "Round 1", "Round 2", 
+                 "Round 3", "Round 4", "Round 5", "Round 6", "Round 7")
+tournament_info <- fread(url, skip = 4, sep = "|", fill = TRUE, 
+                         col.names = columnNames, drop = 11)
+rows_to_read <- seq_len(nrow(tournament_info)) %% 3 != 0
+tournament_info <- tournament_info[rows_to_read, ]
+head(tournament_info, 5)
+```
+
+The text file had two lines that contained info for one player, so I decided to
+create two table. Table one contains the player info from the first line. Table
+two contains the player info from the second line.
+
+```{r create two tables, player_info_1 and player_info 2}
+player_info_1_rows <-seq_len(nrow(tournament_info)) %% 2 != 0
+player_info_2_rows <-seq_len(nrow(tournament_info)) %% 2 == 0
+
+player_info_1 <- tournament_info[player_info_1_rows, ]
+head(player_info_1, 5)
+player_info_2 <- tournament_info[player_info_2_rows, ]
+head(player_info_2, 5)
+```
+
+Clean up **player_info_1** table
+
+```{r get rid of unused columns from player_info_1}
+player_info_1$`Pair Num` <- NULL
+```
+
+```{r split and extract necessary info from columns in player_info_1}
+player_info_1 <- player_info_1 %>% separate_wider_regex(cols = "Round 1", 
+                 patterns = c("[a-zA-Z]", "\\ *", "Opponent 1" = "[0-9]*"))
+player_info_1 <- player_info_1 %>% separate_wider_regex(cols = "Round 2", 
+                 patterns = c("[a-zA-Z]", "\\ *", "Opponent 2" = "[0-9]*"))
+player_info_1 <- player_info_1 %>% separate_wider_regex(cols = "Round 3", 
+                 patterns = c("[a-zA-Z]", "\\ *", "Opponent 3" = "[0-9]*"))
+player_info_1 <- player_info_1 %>% separate_wider_regex(cols = "Round 4", 
+                 patterns = c("[a-zA-Z]", "\\ *", "Opponent 4" = "[0-9]*"))
+player_info_1 <- player_info_1 %>% separate_wider_regex(cols = "Round 5", 
+                 patterns = c("[a-zA-Z]", "\\ *", "Opponent 5" = "[0-9]*"))
+player_info_1 <- player_info_1 %>% separate_wider_regex(cols = "Round 6", 
+                 patterns = c("[a-zA-Z]", "\\ *", "Opponent 6" = "[0-9]*"))
+player_info_1 <- player_info_1 %>% separate_wider_regex(cols = "Round 7", 
+                 patterns = c("[a-zA-Z]", "\\ *", "Opponent 7" = "[0-9]*"))
+```
+
+```{r change class of player_info_1 columns}
+player_info_1$`Total Pts` <- as.numeric(player_info_1$`Total Pts`)
+player_info_1$`Opponent 1` <- as.numeric(player_info_1$`Opponent 1`)
+player_info_1$`Opponent 2` <- as.numeric(player_info_1$`Opponent 2`)
+player_info_1$`Opponent 3` <- as.numeric(player_info_1$`Opponent 3`)
+player_info_1$`Opponent 4` <- as.numeric(player_info_1$`Opponent 4`)
+player_info_1$`Opponent 5` <- as.numeric(player_info_1$`Opponent 5`)
+player_info_1$`Opponent 6` <- as.numeric(player_info_1$`Opponent 6`)
+player_info_1$`Opponent 7` <- as.numeric(player_info_1$`Opponent 7`)
+head(player_info_1, 5)
+```
+
+Clean up **player_info_2** table
+
+```{r get rid of unused columns from player_info_2}
+player_info_2$`Total Pts` <- NULL
+player_info_2$`Round 1` <- NULL
+player_info_2$`Round 2` <- NULL
+player_info_2$`Round 3` <- NULL
+player_info_2$`Round 4` <- NULL
+player_info_2$`Round 5` <- NULL
+player_info_2$`Round 6` <- NULL
+player_info_2$`Round 7` <- NULL
+```
+
+```{r split and extract necessary info from columns in player_info_2}
+player_info_2 <- player_info_2 %>% separate_wider_regex(cols = "Player Name", 
+                 patterns = c("[0-9]*","\\ ", "\\/", "\\ ", "[R]","\\:", "\\ *", 
+                 "Player Rating" = "[0-9]*", "[P]?", "[0-9]*", "\\ *", "\\-", 
+                 "\\>", "\\ *", "[0-9]*", "[P]?", "[0-9]*"))
+```
+
+```{r change class of player_info_2 columns}
+player_info_2$`Player Rating` <- as.numeric(player_info_2$`Player Rating`)
+```
+
+```{r change player_info_2 column names}
+colnames(player_info_2) <- c("Player State", "Player Rating")
+head(player_info_2, 5)
+```
+
+The opponent number in **player_info_1** correspond to the the player row info
+in **player_info_1** and **player_info_2**. So I replaced the opponent number in
+**player_info_1** with the player pre-rating from **player_info_2**.
+
+```{r replayer player number with player pre-rating}
+for (i in 1:nrow(player_info_1)){
+  for (j in 3:9){
+    if (is.na(player_info_1[i, j])){
+      next
+    }
+    else{
+      player_info_1[i, j] <- player_info_2[as.numeric(player_info_1[i, j]), 2]
+    }
+  }
+}
+```
+
+```{r update column names}
+colnames(player_info_1) <- c("Player Name", "Total Pts", "Opponent 1 Rating",
+         "Opponent 2 Rating", "Opponent 3 Rating", "Opponent 4 Rating", 
+         "Opponent 5 Rating", "Opponent 6 Rating", "Opponent 7 Rating")
+head(player_info_1, 5)
+```
+
+create table with **Player Name**, **Player State**, **Player Total Points**, 
+**Player Rating**, and **Opponent Avg Rating**.
+
+```{r player tournament info}
+player_info <- tibble("Player Name" = player_info_1$`Player Name`, 
+               "Player State" = player_info_2$`Player State`, 
+               "Player Total Points" = player_info_1$`Total Pts`, 
+               "Player Rating" = player_info_2$`Player Rating`, 
+               "Opponent Avg Rating" = signif(rowMeans(player_info_1[, 3:9], 
+                na.rm = TRUE), 4))
+head(player_info, 5)
+```
+
