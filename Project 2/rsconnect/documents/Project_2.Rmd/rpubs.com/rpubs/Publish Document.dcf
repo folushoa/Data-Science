@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/1095343/5477a8f185df48e2beeeb6f4c73a2024
+bundleId: https://api.rpubs.com/api/v1/document/1095343/5477a8f185df48e2beeeb6f4c73a2024
+url: http://rpubs.com/folushoa/1095343
+when: 1696860574.77535
+lastSyncTime: 1696860574.77536
