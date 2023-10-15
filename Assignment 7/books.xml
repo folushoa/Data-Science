@@ -1,0 +1,17 @@
+<data>
+	<book>
+		<Name>Famous Five</Name>
+		<Genre>Mystery</Genre>
+		<Author>Enid Blyton</Author>
+	</book>
+	<book>
+		<Name>Matilda</Name>
+		<Genre>Magic</Genre>
+		<Author>Roald Dahl</Author>
+	</book>
+	<book>
+		<Name>Animal Farm</Name>
+		<Genre>Dystopian</Genre>
+		<Author>George Orwell</Author>
+	</book>
+</data>
