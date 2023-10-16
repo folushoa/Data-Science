@@ -1,0 +1,86 @@
+---
+title: "Assignment 7"
+author: "Folorunsho Atanda"
+date: "2023-10-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load library
+```{r}
+library(data.table)
+library(tidyverse)
+library(rvest) #for reading HTML file into R
+library(jsonlite) #for reading JSON file into R
+library(xml2)
+```
+
+# HTML Format
+Lets read a HTML table into R
+
+## Save HTML URL into R
+```{r}
+url <- "https://raw.githubusercontent.com/folushoa/Data-Science/Data-607/Assignment%207/books.html"
+html <- read_html(url)
+```
+
+## Convert to data frame
+```{r}
+html_table <- html %>% 
+  html_element("table") %>% 
+  html_table()
+
+html_table
+```
+
+# JSON Format
+Lets read a JSON table into R
+
+## Save JSON url into R
+```{r}
+url <- "https://raw.githubusercontent.com/folushoa/Data-Science/Data-607/Assignment%207/books.json"
+json_table <- fromJSON(url, flatten = TRUE) #reads JSON table and converts to
+                                            #data frame
+
+json_table
+```
+
+# XML Format
+Lets read a XML table into R
+
+## Save XML URL into R
+```{r}
+url <- "https://raw.githubusercontent.com/folushoa/Data-Science/Data-607/Assignment%207/books.xml"
+xml <- read_xml(url)
+```
+
+## Convert to data frame
+```{r}
+name_nodes <- xml %>% #extract all name nodes
+  xml_find_all(".//book") %>% 
+  xml_find_all(".//Name")
+  
+genre_nodes <- xml %>% #extract all genre nodes
+  xml_find_all(".//book") %>% 
+  xml_find_all(".//Genre")
+
+author_nodes <- xml %>% #extract all author nodes
+  xml_find_all(".//book") %>% 
+  xml_find_all(".//Author")
+
+# Extract text from the nodes
+name <- xml_text(name_nodes)
+genre <- xml_text(genre_nodes)
+author <- xml_text(author_nodes)
+
+# Put into a data frame
+xml_table <- tibble(Name = name, Genre = genre, Author = author)
+
+xml_table
+```
+
+The HTML and SML to data frame, data frames are the same, tibble. However, the 
+JSON to data frame is a data frame. All in all they are all data frames.
