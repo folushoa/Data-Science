@@ -1,0 +1,40 @@
+---
+title: "Assignment_9"
+author: "Folorunsho Atanda"
+date: "2023-10-26"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Load library
+```{r}
+library(httr)
+library(jsonlite)
+library(tidyverse)
+library(data.table)
+```
+
+#Access API
+```{r}
+#Save API key
+api_csv <- "C:/Users/NBMF48/Desktop/SPS/Data607/Homework/Assignment 9/API_Key.csv"
+api_key <- fread(api_csv, header = TRUE)
+
+#API access HTTP
+url <- paste0("https://api.nytimes.com/svc/books/v3/lists/names.json?api-key=", api_key$Key)
+
+#Access API information
+response <- GET(url)
+data <- fromJSON(content(response, "text"))
+
+#Convert to data frame
+books <- as_tibble(data$results)
+
+head(books, 10)
+```
+
