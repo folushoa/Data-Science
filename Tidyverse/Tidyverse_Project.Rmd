@@ -1,0 +1,69 @@
+---
+title: "Tidyverse Create Recipe"
+author: "Folorunsho Atanda"
+date: "2023-11-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+For this assignment I decided to use the **map()** function in the **purrr* package of the tidyverse.
+
+I chose **map()** because it allows for element operation of a vector or list. It gives us a replacement for **for loops**.
+
+```{r load library}
+library(tidyverse)
+library(data.table)
+```
+
+```{r load data}
+url <- "https://raw.githubusercontent.com/folushoa/Data-Science/Data-607/Tidyverse/heart_failure_clinical_records_dataset.csv"
+
+data <- fread(url)
+```
+
+```{r function used}
+#this function take a value and checks if it is **0** or **1**. By default if the value is **0** it returns "NO". If not it will return "yes"
+binary_fn <- function(x, true_value = "No", false_value = "Yes"){
+  result <- if_else(x == 0, true_value, false_value)
+  return(result)
+}
+```
+
+```{r data replacement}
+#using the function, replace the values of some of the columns
+data$sex <- map(data$sex, ~binary_fn(.x, "Female", "Male"))
+
+data$high_blood_pressure <- map(data$high_blood_pressure, ~binary_fn(.x))
+
+data$anaemia <- map(data$anaemia, ~binary_fn(.x))
+
+data$diabetes <- map(data$diabetes, ~binary_fn(.x))
+
+data$smoking <- map(data$smoking, ~binary_fn(.x,))
+
+data$DEATH_EVENT <- map(data$DEATH_EVENT, ~binary_fn(.x))
+```
+
+For each of these columns, **map()** applied **binary_fn** to each of the elements of the column.
+
+This allows for better understanding of our data. Take for example
+
+```{r example}
+#count of observations grouped by Death Event
+data_by_death_event <- data %>% 
+  group_by(DEATH_EVENT) %>% 
+  count()
+print(data_by_death_event)
+
+#count of observations grouped by sex and Death Event
+data_by_sex_n_death_event <- data %>% 
+  group_by(sex, DEATH_EVENT) %>% 
+  count()
+print(data_by_sex_n_death_event)
+```
+Note: I don't understand why my columns have the value **<chr [1]>**. When I view the data frame the values are **"Yes", "No", "Male", or "Female"**.
