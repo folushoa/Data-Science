@@ -58,12 +58,12 @@ This allows for better understanding of our data. Take for example
 data_by_death_event <- data %>% 
   group_by(DEATH_EVENT) %>% 
   count()
-print(data_by_death_event)
+view(data_by_death_event)
 
 #count of observations grouped by sex and Death Event
 data_by_sex_n_death_event <- data %>% 
   group_by(sex, DEATH_EVENT) %>% 
   count()
-print(data_by_sex_n_death_event)
+view(data_by_sex_n_death_event)
 ```
 Note: I don't understand why my columns have the value **<chr [1]>**. When I view the data frame the values are **"Yes", "No", "Male", or "Female"**.
