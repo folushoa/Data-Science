@@ -1,0 +1,83 @@
+library(tidyverse)
+library(dplyr)
+library(data.table)
+
+# 1.  Using the 173 majors listed in fivethirtyeight.com’s College Majors 
+# dataset, provide code that identifies the majors that contain either "DATA" 
+# or "STATISTICS"
+
+url = "https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv"
+major_list = fread(url, header = TRUE)
+data_statistic_major <- str_view(major_list$Major, "DATA|STATISTICS")
+data_statistic_major
+
+# 2. Write code that transforms the data below
+
+fg <- '[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+
+[13] "olive"        "salal berry"'
+
+pattern1 <- '\\"[a-zA-Z]+\\ ?[a-zA-Z]+?\\"'
+fruit_and_vegetable <- unlist(str_extract_all(fg, pattern1))
+fruit_and_vegetable
+str_remove_all(fruit_and_vegetable, "\"")
+
+# 3. Describe, in words, what these expressions will match:
+# a. **(.)\1\1**: This regular expression will match any string that has three
+#    repeated characters, e.g.
+
+str_view(c("caaarve", "trinnne", "craske"), "(.)\\1\\1")
+str_detect(c("caaarve", "trinnne", "craske"), "(.)\\1\\1")
+
+# b. **"(.)(.)\\2\\1**: This regular expression will match any string that has
+#    at least four character where from the first grouping the third character 
+#    matches the second character and the fourth character matches the first. 
+#    e.g.
+
+str_view(c("caa", "raaretar", "trrt", "abba", "bassat"), "(.)(.)\\2\\1")
+str_detect(c("caa", "raaretar", "trrt", "abba", "bassat"), "(.)(.)\\2\\1")
+
+# c. **(..)\1**: This regular expression will match any string that has
+#    at least four character where from the first grouping the next two 
+#    consecutive characters match the first two preceding characters. e.g.
+
+str_view(c("caac", "raarar", "trtr", "abba", "sat"), "(..)\\1")
+str_detect(c("caac", "raarar", "trtr", "abba", "sat"), "(..)\\1")
+
+# d. **"(.).\\1.\\1"**: This regular expression will match any string that has
+#    at least five characters where from the first grouping the third and fifth 
+#    characters match the first characters. The second and fourth character
+#    don't need to match. e.g.
+
+str_view(c("cacrcab", "rbti", "grgrg", "btvqvrv"), "(.).\\1.\\1")
+str_detect(c("cacrcab", "rbti", "grgrg", "btvqvrv"), "(.).\\1.\\1")
+
+# e. **"(.)(.)(.).*\\3\\2\\1"**: This regular expression will match any strings
+#    that has at least six characters where from the first three grouping there 
+#    might be a bunch of characters but then the first three grouping repeat
+#    themselves but in reverse order. e.g.
+
+str_view(c("abccba", "gretcdterab", "gvbe", "qrstuv"), "(.)(.)(.).*\\3\\2\\1")
+str_detect(c("abccba", "gretcdterab", "gvbe", "qrstuv"), "(.)(.)(.).*\\3\\2\\1")
+
+# 4. Construct regular expressions to match words that:
+# a. Start and end with the same character: **^([a-zA-Z]).*\1$** e.g.
+
+str_view(c("apple", "anana", "abba", "creerp"), "^([a-zA-Z]).*\\1$")
+
+# b. Contain a repeated pair of letters: **[a-zA-Z][a-zA-Z]).*\1** e.g.
+
+str_view(fruits, "([a-zA-Z][a-zA-Z]).*\\1")
+
+# c. Contain one letter repeated in at least three places: 
+# **([a-zA-Z]).*\1.*\1.** e.g.
+
+str_view(fruits, "([a-zA-Z]).*\\1.*\\1.")
+
+
+
+

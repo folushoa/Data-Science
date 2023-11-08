@@ -1,0 +1,110 @@
+---
+title: "Assignment2"
+author: "Folorunsho Atanda"
+date: "2023-09-10"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load required library
+```{r}
+library(DBI)
+library(RMySQL)
+library(dplyr)
+library(dotenv)
+```
+
+## Create database connection
+```{r}
+dotenv::load_dot_env(file = "sql_pw.env")
+my_sql_pw <- Sys.getenv("MYSQL_PW")
+
+db <- dbConnect(MySQL(),
+      user = "root",
+      password = my_sql_pw,
+      dbname = "assignment_2",
+      host = "localhost",
+      port = 3306)
+
+popular_movie_rating <- dbGetQuery(db, 
+                        "select * from assignment_2.popular_movie_rating")
+
+PMR_df <- as.data.frame((popular_movie_rating))
+PMR_df 
+```
+
+## Table summary
+```{r}
+summary(PMR_df)
+```
+
+## Table glimpse
+```{r}
+glimpse(PMR_df)
+```
+
+## Create filtered tables based on movies.
+## First factor the movie name column to see the unique categories
+```{r}
+factor(PMR_df$Movie_Name) %>%levels()
+```
+
+## Now filter 
+```{r}
+barbie_PMR_df <- PMR_df %>% filter(Movie_Name == "Barbie" & 
+                            is.na(Movie_Rating) == FALSE)
+barbie_PMR_df 
+
+indiana_jones_PMR_df <- PMR_df %>% filter(Movie_Name == "Indiana Jones" & 
+                                   is.na(Movie_Rating) == FALSE)
+indiana_jones_PMR_df 
+
+oppenheimer_PMR_df <- PMR_df %>% filter(Movie_Name == "Oppenheimer" & 
+                                 is.na(Movie_Rating) == FALSE)
+oppenheimer_PMR_df 
+
+tmnt_PMR_df <- PMR_df %>% filter(Movie_Name == "TMNT: Mutant Mayhem" & 
+                          is.na(Movie_Rating) == FALSE)
+tmnt_PMR_df 
+
+nimona_PMR_df <- PMR_df %>% filter(Movie_Name == "Nimona" & 
+                            is.na(Movie_Rating) == FALSE)
+nimona_PMR_df 
+
+meg2_PMR_df <- PMR_df %>% filter(Movie_Name == "Meg 2" & 
+                          is.na(Movie_Rating) == FALSE)
+meg2_PMR_df 
+```
+
+## To find the central value of the ratings we shall use median.
+## My reason for using median is because the number of reviews for each
+## movie is different now that we have removed **NA** values.
+```{r}
+barbie_PMR_df_median <- barbie_PMR_df %>% summarise(median(Movie_Rating))
+ij_PMR_df_median <- indiana_jones_PMR_df %>% summarise(median(Movie_Rating))
+opp_PMR_df_median <- oppenheimer_PMR_df %>% summarise(median(Movie_Rating))
+tmnt_PMR_df_median <- tmnt_PMR_df %>% summarise(median(Movie_Rating))
+nimona_PMR_df_median <- nimona_PMR_df %>% summarise(median(Movie_Rating))
+meg2_PMR_df_median <- meg2_PMR_df %>% summarise(median(Movie_Rating))
+```
+
+## Place median (overall rating) in a table
+```{r}
+popular_movie_overall_rating <- data.frame(
+  Movie_Name = c("Barbie", "Indiana Jones", "Meg 2", "Nimona", "Oppenheimer",
+                 "TMNT: Mutant Mayhem"), 
+  Overall_Rating = c(barbie_PMR_df_median$`median(Movie_Rating)`, 
+                     ij_PMR_df_median$`median(Movie_Rating)`, 
+                     meg2_PMR_df_median$`median(Movie_Rating)`,
+                     nimona_PMR_df_median$`median(Movie_Rating)`, 
+                     opp_PMR_df_median$`median(Movie_Rating)`, 
+                     tmnt_PMR_df_median$`median(Movie_Rating)`)
+)
+popular_movie_overall_rating 
+```
+

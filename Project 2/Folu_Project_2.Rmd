@@ -1,0 +1,373 @@
+---
+title: "Project 2"
+author: "Folorunsho Atanda"
+date: "2023-10-04"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load required library
+```{r}
+library(tidyverse)
+library(RMySQL)
+library(dotenv)
+```
+
+# Create database connection
+```{r}
+dotenv::load_dot_env(file = "sql_pw.env")
+my_sql_pw <- Sys.getenv("MYSQL_PW")
+
+db <- dbConnect(
+  MySQL(),
+  user = "root",
+  #password = my_sql_pw,
+  password = "0830spscuny2023!!!",
+  dbname = "project_2",
+  host = "localhost",
+  port = 3306
+)
+```
+
+# Load table from database as a data frame
+```{r}
+diabetes <- db %>% 
+  dbGetQuery("select * from project_2.diabetes")
+
+diabetes_df <- as_tibble(diabetes)
+
+# Disconnect database
+#db_status <- dbDisconnect(db)
+```
+
+Because **0** can't exist in the columns **Glucose, BloodPressure,** 
+**SkinThickness, Insulin, BMI, DPF and Age**, going to change does to **NA**. 
+Then also change **0** to **FALSE** and **1** to **TRUE** in **Outcome**
+```{r}
+columns_to_modify <- c("Glucose", "BloodPressure", "SkinThickness", "Insulin",
+                       "BMI", "DPF", "Age")
+
+diabetes_df <- diabetes_df %>% 
+  mutate(across(all_of(columns_to_modify), ~if_else(. == 0, NA, .))) %>% 
+  mutate("Outcome" = ifelse(`Outcome` == 0, "Negative", "Positive"))
+```
+
+# Summarise data 
+```{r}
+glimpse(diabetes_df)
+
+summary(diabetes_df)
+```
+# Compare Variables
+
+## Pregnancies vs Outcome
+```{r}
+diabetes_df %>% 
+  ggplot(aes(x = `Pregnancies`, fill = `Outcome`)) +
+  geom_bar(
+    stat = "count", 
+    position = "dodge", 
+    na.rm = TRUE) +
+  facet_wrap(~`Outcome`)
+
+diabetes_df %>% 
+  ggplot(aes(x = `Outcome`, y = `Pregnancies`)) +
+  geom_boxplot(
+    stat = "boxplot",
+    color = c("red","blue"),
+    ) + 
+  labs(title = "Pregnancies vs Outcome")
+
+diabetes_df %>% 
+  select(c(`Pregnancies`, `Outcome`)) %>% 
+  group_by(`Outcome`) %>% 
+  summarise(
+    Pregnancies_mean = mean(`Pregnancies`), 
+    Pregnancies_median = median(`Pregnancies`),
+    Pregnancies_Q1 = quantile(`Pregnancies`, probs = 0.25),
+    Pregnancies_Q2 = quantile(`Pregnancies`, probs = 0.75)
+    )
+```
+
+**Analysis**: The distribution of `Pregnancies` to `Outcome` is right skewed. This tells us that the median and mean are not the same. Which is confirmed in the box plot and the stat table.
+
+
+## Glucose vs Outcome
+```{r}
+diabetes_df %>% 
+  ggplot(aes(x = `Glucose`, fill = `Outcome`)) +
+  geom_bar(
+    stat = "count", 
+    position = "dodge",
+    na.rm = TRUE
+    ) +
+  facet_wrap(~`Outcome`)
+
+diabetes_df %>% 
+  ggplot(aes(x = `Outcome`, y = `Glucose`)) +
+  geom_boxplot(
+    stat = "boxplot",
+    color = c("red","blue"),
+    na.rm = TRUE
+    ) + 
+  labs(title = "Glucose vs Outcome")
+
+diabetes_df %>% 
+  select(c(`Glucose`, `Outcome`)) %>% 
+  group_by(`Outcome`) %>% 
+  summarise(
+    Glucose_mean = mean(`Glucose`, na.rm = TRUE), 
+    Glucose_median = median(`Glucose`, na.rm = TRUE),
+    Glucose_Q1 = quantile(`Glucose`, probs = 0.25, na.rm = TRUE),
+    Glucose_Q2 = quantile(`Glucose`, probs = 0.75, na.rm = TRUE)
+    )
+```
+
+**Analysis**: The distribution of `Glucose` to `Outcome` is symmetrical. This tells us that the median and mean are very close to one another. Which is confirmed in the box plot and the stat table. From the stat table we can infer that most of the data is between 93 and 167.
+
+
+## Blood Pressure vs Outcome
+```{r}
+diabetes_df %>% 
+  ggplot(aes(x = `BloodPressure`, fill = `Outcome`)) +
+  geom_bar(
+    stat = "count", 
+    position = "dodge",
+    na.rm = TRUE
+    ) +
+  facet_wrap(~`Outcome`)
+
+diabetes_df %>% 
+  ggplot(aes(x = `Outcome`, y = `BloodPressure`)) +
+  geom_boxplot(
+    stat = "boxplot",
+    color = c("red","blue"),
+    na.rm = TRUE
+    ) 
+
+diabetes_df %>% 
+  select(c(`BloodPressure`, `Outcome`)) %>% 
+  group_by(`Outcome`) %>% 
+  summarise(
+    BloodPressure_mean = mean(`BloodPressure`, na.rm = TRUE), 
+    BloodPressure_median = median(`BloodPressure`, na.rm = TRUE),
+    BloodPressure_Q1 = quantile(`BloodPressure`, probs = 0.25, na.rm = TRUE),
+    BloodPressure_Q2 = quantile(`BloodPressure`, probs = 0.75, na.rm = TRUE)
+    )
+```
+
+**Analysis**: The distribution of `BloodPressure` to `Outcome` is symmetrical. This tells us that the median and mean are very close to one another. Which is confirmed in the box plot and the stat table. From the stat table we can infer that most of the data is between 62 and 84.
+
+
+## Skin Thickness vs Outcome
+```{r}
+diabetes_df %>% 
+  ggplot(aes(x = `SkinThickness`, fill = `Outcome`)) +
+  geom_bar(
+    stat = "count", 
+    position = "dodge",
+    na.rm = TRUE
+    ) +
+  facet_wrap(~`Outcome`)
+
+diabetes_df %>% 
+  ggplot(aes(x = `Outcome`, y = `SkinThickness`)) +
+  geom_boxplot(
+    stat = "boxplot",
+    color = c("red","blue"),
+    na.rm = TRUE
+    ) 
+
+diabetes_df %>% 
+  select(c(`SkinThickness`, `Outcome`)) %>% 
+  group_by(`Outcome`) %>% 
+  summarise(
+    SkinThickness_mean = mean(`SkinThickness`, na.rm = TRUE), 
+    SkinThickness_median = median(`SkinThickness`, na.rm = TRUE),
+    SkinThickness_Q1 = quantile(`SkinThickness`, probs = 0.25, na.rm = TRUE),
+    SkinThickness_Q2 = quantile(`SkinThickness`, probs = 0.75, na.rm = TRUE)
+    )
+```
+
+**Analysis**: The distribution of `SkinThickness` to `Outcome` is symmetrical. This tells us that the median and mean are very close to one another. Which is confirmed in the box plot and the stat table. From the stat table we can infer that most of the data is between 19 and 39.
+
+
+## Insulin vs Outcome
+```{r}
+diabetes_df %>% 
+  ggplot(aes(x = `Insulin`, fill = `Outcome`)) +
+  geom_bar(
+    stat = "count", 
+    position = "dodge",
+    na.rm = TRUE
+    ) +
+  facet_wrap(~`Outcome`)
+
+diabetes_df %>% 
+  ggplot(aes(x = `Outcome`, y = `Insulin`)) +
+  geom_boxplot(
+    stat = "boxplot",
+    color = c("red","blue"),
+    na.rm = TRUE
+    ) 
+
+diabetes_df %>% 
+  select(c(`Insulin`, `Outcome`)) %>% 
+  group_by(`Outcome`) %>% 
+  summarise(
+    Insulin_mean = mean(`Insulin`, na.rm = TRUE), 
+    Insulin_median = median(`Insulin`, na.rm = TRUE),
+    Insulin_Q1 = quantile(`Insulin`, probs = 0.25, na.rm = TRUE),
+    Insulin_Q2 = quantile(`Insulin`, probs = 0.75, na.rm = TRUE)
+    )
+```
+
+**Analysis**: The distribution of `Insulin` to `Outcome` is right skewed. This tells us that the median and mean are not the same. Which is confirmed in the box plot and the stat table.
+
+
+## BMI vs Outcome
+```{r}
+diabetes_df %>% 
+  ggplot(aes(x = `BMI`, fill = `Outcome`)) +
+  geom_bar(
+    stat = "count", 
+    position = "dodge",
+    na.rm = TRUE
+    ) +
+  facet_wrap(~`Outcome`)
+
+diabetes_df %>% 
+  ggplot(aes(x = `Outcome`, y = `BMI`)) +
+  geom_boxplot(
+    stat = "boxplot",
+    color = c("red","blue"),
+    na.rm = TRUE
+    ) 
+
+diabetes_df %>% 
+  select(c(`BMI`, `Outcome`)) %>% 
+  group_by(`Outcome`) %>% 
+  summarise(
+    BMI_mean = mean(`BMI`, na.rm = TRUE), 
+    BMI_median = median(`BMI`, na.rm = TRUE),
+    BMI_Q1 = quantile(`BMI`, probs = 0.25, na.rm = TRUE),
+    BMI_Q2 = quantile(`BMI`, probs = 0.75, na.rm = TRUE)
+    )
+```
+
+**Analysis**: The distribution of `BMI` to `Outcome` is symmetrical. This tells us that the median and mean are very close to one another. Which is confirmed in the box plot and the stat table. From the stat table we can infer that most of the data is between 19 and 39.
+
+
+## DPF vs Outcome
+```{r}
+diabetes_df %>% 
+  ggplot(aes(x = `DPF`, fill = `Outcome`)) +
+  geom_bar(
+    stat = "count", 
+    position = "dodge",
+    na.rm = TRUE
+    ) +
+  facet_wrap(~`Outcome`)
+
+diabetes_df %>% 
+  ggplot(aes(x = `Outcome`, y = `DPF`)) +
+  geom_boxplot(
+    stat = "boxplot",
+    color = c("red","blue"),
+    na.rm = TRUE
+    ) 
+
+diabetes_df %>% 
+  select(c(`DPF`, `Outcome`)) %>% 
+  group_by(`Outcome`) %>% 
+  summarise(
+    DPF_mean = mean(`DPF`, na.rm = TRUE), 
+    DPF_median = median(`DPF`, na.rm = TRUE),
+    DPF_Q1 = quantile(`DPF`, probs = 0.25, na.rm = TRUE),
+    DPF_Q2 = quantile(`DPF`, probs = 0.75, na.rm = TRUE)
+    )
+```
+
+**Analysis**: The distribution of `DPF` to `Outcome` is right skewed. This tells us that the median and mean are not the same. Which is confirmed in the box plot and the stat table.
+
+
+## Age vs Outcome
+```{r}
+diabetes_df %>% 
+  ggplot(aes(x = `Age`, fill = `Outcome`)) +
+  geom_bar(
+    stat = "count", 
+    position = "dodge",
+    na.rm = TRUE
+    ) +
+  facet_wrap(~`Outcome`)
+
+diabetes_df %>% 
+  ggplot(aes(x = `Outcome`, y = `Age`)) +
+  geom_boxplot(
+    stat = "boxplot",
+    color = c("red","blue"),
+    na.rm = TRUE
+    ) 
+
+diabetes_df %>% 
+  select(c(`Age`, `Outcome`)) %>% 
+  group_by(`Outcome`) %>% 
+  summarise(
+    Age_mean = mean(`Age`), 
+    Age_median = median(`Age`),
+    Age_Q1 = quantile(`Age`, probs = 0.25),
+    Age_Q2 = quantile(`Age`, probs = 0.75)
+    )
+```
+
+**Analysis**: The distribution of `Age` to `Outcome` is right skewed. This tells us that the median and mean are not the same. Which is confirmed in the box plot and the stat table.
+
+
+# Correlation
+
+Because `Glucose`, `BloodPressure`, and `BMI` have normal distribution, I want to see if there is a correlation between them, focusing on a **positive** diabetes `Outcome`.
+
+```{r}
+diabetes_cor <- diabetes_df %>% 
+  select(c(`Glucose`, `BloodPressure`, `BMI`, `Outcome`)) %>% 
+  filter(`Outcome` == "Positive") 
+
+Glucose_BloodPressure_cor <- cor(
+  x = as.numeric(diabetes_cor$Glucose),  
+  y = as.numeric(diabetes_cor$BloodPressure), 
+  use = "na.or.complete",
+  method = "pearson"
+  )
+
+Glucose_BMI_cor <- cor(
+  x = as.numeric(diabetes_cor$Glucose),  
+  y = as.numeric(diabetes_cor$BMI), 
+  use = "na.or.complete", 
+  method = "pearson"
+  )
+
+BloodPressure_BMI_cor <- cor(
+  x = as.numeric(diabetes_cor$BloodPressure),  
+  y = as.numeric(diabetes_cor$BMI), 
+  use = "na.or.complete",
+  method = "pearson"
+  )
+
+correlation_df <- tibble(
+  Relationship = c("Glucose vs Blood Pressure", "Glucose vs BMI",
+                   "Blood Pressure vs BMI"),
+  Correlation = c(Glucose_BloodPressure_cor, Glucose_BMI_cor, 
+                  BloodPressure_BMI_cor)
+)
+
+correlation_df
+```
+
+**Analysis**: From the table we see that there is no correlation between these three variables.
+

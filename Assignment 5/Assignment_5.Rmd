@@ -1,0 +1,87 @@
+---
+title: "Assignment_5"
+author: "Folorunsho Atanda"
+date: "2023-10-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load libraries
+
+```{r}
+library(tidyverse)
+library(data.table)
+```
+
+# Read created cvs from github
+
+```{r}
+url <- "https://raw.githubusercontent.com/folushoa/Data-Science/Data-607/Assignment%205/Assignment%205.csv"
+airline_data <- fread(url, na.strings = "")
+airline_data
+```
+
+# Tidy data
+
+```{r}
+airline_data <- airline_data %>% 
+  fill(Airline, .direction = "down")
+airline_data
+
+airline_data <- airline_data %>%
+  pivot_longer(
+    cols = !c(Airline, Status),
+    names_to = "City",
+    values_to = "Count"
+  )
+airline_data
+```
+
+# Analyze data
+
+Compare arrival delays of the two airlines
+
+```{r}
+airline_data_delay <- airline_data %>% 
+  filter(Status == "Delayed") %>% 
+  group_by(Airline) %>% 
+  summarise(
+    "Total Count" = sum(Count),
+  ) %>% 
+  mutate(
+    "Proportion" = signif(`Total Count`/sum(`Total Count`), digits = 4)
+  )
+airline_data_delay
+
+airline_data_delay %>%
+  ggplot(aes(x = `Airline`, y = `Proportion`)) +
+  geom_bar(stat = "identity") 
+```
+
+**Conclusion**:
+From the table and the plot we see that Alaska airline had less delays than 
+AM West, 0.389 to 0.611
+
+Compare arrival delays by city
+
+```{r}
+airline_data_delay <- airline_data %>% 
+  filter(Status == "Delayed") %>% 
+  group_by(Airline) %>% 
+  mutate(
+    "Proportion" = signif(`Count`/sum(`Count`), digits = 3)
+  )
+airline_data_delay
+
+airline_data_delay %>%
+  ggplot(aes(x = `Airline`, y = `Proportion`)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~City)
+```
+
+**Conclusion**: 
+From the plots by City, AM West arrives late more times than Alaska airline. So 
+I would conclude that it is better to travel by AM West than Alaska.
