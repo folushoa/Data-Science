@@ -1,0 +1,109 @@
+---
+title: "Data605 HW2"
+author: "Folorunsho Atanda"
+date: "2024-02-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+suppressMessages(
+  library(tidyverse)
+)
+```
+
+# Problem Set 1.1
+## Show that **_A^T^A $\neq$ AA^T^_** in general form
+Let _A_ be a _m by n_ matrix such that _m $\neq$ n. Therefore _A^T^A will equal
+a matrix with dimension _n by n_. While _AA^T^_ will equal a matrix with 
+dimension _m by m_. Since _m $\neq$ n_, then _A^T^A $\neq$ AA^T^_. QED 
+
+For example:
+```{r 1.1 Demonstration}
+A <- matrix(seq(1, 6, by = 1), nrow = 3, byrow = TRUE)
+# Transpose of A left multiply A
+t(A) %*% A
+# A left multiply Transpose of A
+A %*% t(A)
+```
+
+# Problem Set 1.2
+## For a special type of square matrix **_A_**, we get **_A^T^A $=$ AA^T^_**. 
+## Under what conditin is this true?
+For a square matrix _A_, _A^T^A $=$ AA^T^_ is true if _A_ is a **symmetrical**
+**matrix**, i.e. A $=$ A^T^
+
+For example:
+```{r 1.2 Demonstration}
+content <- c(3, 4, 4, 2)
+A <- matrix(content, nrow = 2, byrow = TRUE)
+# Compare A with it Transpose
+A == t(A) # Both matrix are equal
+
+# Compare Transpose of A left multiply A with # A left multiply Transpose of A
+t(A) %*% A == A %*% t(A) # Both matrix are equal
+```
+Therefore if A $=$ A^T^ then AA^T^ $=$ A^T^A
+
+
+# Problem Set 2
+```{r LU Factorization}
+lu_factorization <- function(A) {
+  # Check if the matrix is square
+  if (ncol(A) != nrow(A)) {
+    return("Input matrix must be square for LU factorization.")
+  }
+  
+  n <- nrow(A)
+  
+  # Initialize L and U matrices
+  L <- diag(n)
+  U <- matrix(0, n, n)
+  
+  for (k in 1:n) {
+    # Populate L and U matrices
+    U[k, k] <- A[k, k]
+    
+    if(k + 1 <= n){
+      for (i in (k + 1):n){
+        L[i, k] <- A[i, k]/U[k, k]
+        U[k, i] <- A[k, i]
+      }
+      
+      # Update rest of matrix accordingly
+      for (i in (k + 1):n){
+        for (j in (k + 1):n){
+          A[i, j] <- A[i, j] - (L[i, k] %*% U[k, j])
+        }
+      }
+    }
+  }
+  # Return the L and U
+  return(list(L = L, U = U))
+}
+
+# Example usage
+A <- matrix(c(2, 3, 1, 5, 6, 13, 5, 19, 2, 19, 10, 23, 4, 10, 11, 31), 
+            nrow = 4, 
+            byrow = TRUE)
+
+# Perform LU factorization
+lu_result <- lu_factorization(A)
+
+# Display the result
+print("Original Matrix A:")
+print(A)
+
+print("Matrix L:")
+print(lu_result$L)
+
+print("Matrix U:")
+print(lu_result$U)
+
+# Compare LU factorization with original A matrix
+(lu_result$L %*% lu_result$U) == A
+```
+
